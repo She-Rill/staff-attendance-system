@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Staff Attendance System</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+        }
+        header {
+            background: #1e3a8a;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .header-content {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .current-time {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0px 2px 10px rgba(0,0,0,0.1);
+            transition: 0.3s;
+        }
+        .card:hover { transform: translateY(-5px); }
+        .avatar {
+            width: 80px;
+            height: 80px;
+            background: #1e3a8a;
+            color: white;
+            border-radius: 50%;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin-bottom: 15px;
+        }
+        button {
+            padding: 12px 18px;
+            margin: 5px;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+        }
+        .in { background: #16a34a; }
+        .out { background: #dc2626; }
+        button:hover { opacity: 0.9; }
+        #message {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 20px;
+            padding: 15px;
+            background: #e0f2fe;
+            border-left: 4px solid #0284c7;
+            border-radius: 6px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0px 2px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+        thead {
+            background: #1e3a8a;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <div class="header-content">Staff Attendance System</div>
+    <div class="current-time" id="liveTime"></div>
+</header>
+
+<div id="message"></div>
+
+<div class="container">
+    <div class="card">
+        <div class="avatar">G</div>
+        <h2>Geoffrey Onyango</h2>
+        <button class="in" onclick="clockIn('Geoffrey Onyango')">Clock In</button>
+        <button class="out" onclick="clockOut('Geoffrey Onyango')">Clock Out</button>
+    </div>
+
+    <div class="card">
+        <div class="avatar">J</div>
+        <h2>Jackline Mbithi</h2>
+        <button class="in" onclick="clockIn('Jackline Mbithi')">Clock In</button>
+        <button class="out" onclick="clockOut('Jackline Mbithi')">Clock Out</button>
+    </div>
+
+    <div class="card">
+        <div class="avatar">S</div>
+        <h2>Sherill Cornel</h2>
+        <button class="in" onclick="clockIn('Sherill Cornel')">Clock In</button>
+        <button class="out" onclick="clockOut('Sherill Cornel')">Clock Out</button>
+    </div>
+
+    <div class="card">
+        <div class="avatar">O</div>
+        <h2>Owet Cynthia</h2>
+        <button class="in" onclick="clockIn('Owet Cynthia')">Clock In</button>
+        <button class="out" onclick="clockOut('Owet Cynthia')">Clock Out</button>
+    </div>
+
+    <!-- New Staff Card -->
+    <div class="card">
+        <div class="avatar">A</div>
+        <h2>Anthony Kihara</h2>
+        <button class="in" onclick="clockIn('Anthony Kihara')">Clock In</button>
+        <button class="out" onclick="clockOut('Anthony Kihara')">Clock Out</button>
+    </div>
+</div>
+
+<div style="padding: 30px;">
+    <h2>Attendance History</h2>
+    <table border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #1e3a8a; color: white;">
+                <th style="padding: 10px;">Name</th>
+                <th style="padding: 10px;">Date</th>
+                <th style="padding: 10px;">Clock In</th>
+                <th style="padding: 10px;">Clock Out</th>
+            </tr>
+        </thead>
+        <tbody id="attendanceTableBody">
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Live clock in header
+    function updateLiveTime() {
+        const now = new Date();
+        const options = {
+            weekday: 'short',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        };
+        document.getElementById("liveTime").innerText = 
+            now.toLocaleString('en-US', options);
+    }
+    updateLiveTime();
+    setInterval(updateLiveTime, 1000);
+
+    async function clockIn(name) {
+        const response = await fetch('/clock-in', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        });
+        const data = await response.json();
+        document.getElementById("message").innerText = data.message;
+        await loadAttendanceHistory();
+    }
+
+    async function clockOut(name) {
+        const response = await fetch('/clock-out', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        });
+        const data = await response.json();
+        document.getElementById("message").innerText = data.message;
+        await loadAttendanceHistory();
+    }
+
+    // FETCH AND DISPLAY ATTENDANCE HISTORY
+async function loadAttendanceHistory() {
+    const response = await fetch('http://localhost:3000/attendance-history');
+    const data = await response.json();
+    
+    const tableBody = document.getElementById("attendanceTableBody");
+    tableBody.innerHTML = "";
+    
+    data.forEach((record) => {
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+        <td>${record.name}</td>
+
+        <td>
+            ${new Date(record.work_date).toLocaleDateString('en-GB', {
+                weekday: 'short',
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            })}
+        </td>
+
+        <td>
+            ${record.time_in 
+                ? new Date(record.time_in).toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }) 
+                : "N/A"}
+        </td>
+
+        <td>
+            ${record.time_out 
+                ? new Date(record.time_out).toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }) 
+                : "N/A"}
+        </td>
+    `;
+
+    tableBody.appendChild(row);
+});
+}
+
+// Load attendance history on page load
+loadAttendanceHistory();
+
+// Refresh history every 5 seconds
+setInterval(loadAttendanceHistory, 5000);
+
+</script>
+
+</body>
+</html>
+
+
