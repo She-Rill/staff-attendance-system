@@ -10,12 +10,16 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname + "/public"));
 
-// CONNECT TO MySQL
+/* =========================
+   MYSQL CONNECTION
+========================= */
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT || 3306
+  
 });
 
 db.connect((err) => {
@@ -27,7 +31,9 @@ db.connect((err) => {
   console.log("✅ Connected to MySQL");
 });
 
-// FORMAT HELPERS
+/* =========================
+   FORMAT HELPERS
+========================= */
 function formatDate(value) {
   if (!value) return null;
 
@@ -50,15 +56,12 @@ function formatTime(value) {
   });
 }
 
-// GET ATTENDANCE HISTORY
+/* =========================
+   GET ATTENDANCE HISTORY
+========================= */
 app.get("/attendance-history", (req, res) => {
   const query = `
-    SELECT 
-      id,
-      name,
-      work_date,
-      time_in,
-      time_out
+    SELECT id, name, work_date, time_in, time_out
     FROM attendance
     ORDER BY work_date DESC, time_in DESC
   `;
@@ -81,7 +84,9 @@ app.get("/attendance-history", (req, res) => {
   });
 });
 
-// CLOCK IN
+/* =========================
+   CLOCK IN
+========================= */
 app.post("/clock-in", (req, res) => {
   const { name } = req.body;
 
@@ -118,7 +123,9 @@ app.post("/clock-in", (req, res) => {
   });
 });
 
-// CLOCK OUT
+/* =========================
+   CLOCK OUT
+========================= */
 app.post("/clock-out", (req, res) => {
   const { name } = req.body;
 
@@ -158,7 +165,11 @@ app.post("/clock-out", (req, res) => {
   });
 });
 
-// START SERVER
-app.listen(process.env.PORT, "0.0.0.0", () => {
-  console.log("🚀 Server running on http://localhost:3000");
+/* =========================
+   START SERVER
+========================= */
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("Server running on port " + PORT);
 });
