@@ -222,60 +222,75 @@ function getPin(name) {
    CLOCK IN
 ========================= */
 async function clockIn(name) {
-    const pin = getPin(name);
+    try {
+        const pin = getPin(name);
 
-    const response = await fetch(`${API_BASE}/clock-in`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, pin })
-    });
+        const response = await fetch(`${API_BASE}/clock-in`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, pin })
+        });
 
-    const data = await response.json();
-    document.getElementById("message").innerText = data.message;
+        const data = await response.json();
+        document.getElementById("message").innerText = data.message;
 
-    loadAttendanceHistory();
+        loadAttendanceHistory();
+    } catch (err) {
+        document.getElementById("message").innerText = "Clock-in failed";
+        console.error(err);
+    }
 }
 
 /* =========================
    CLOCK OUT
 ========================= */
 async function clockOut(name) {
-    const pin = getPin(name);
+    try {
+        const pin = getPin(name);
 
-    const response = await fetch(`${API_BASE}/clock-out`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, pin })
-    });
+        const response = await fetch(`${API_BASE}/clock-out`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, pin })
+        });
 
-    const data = await response.json();
-    document.getElementById("message").innerText = data.message;
+        const data = await response.json();
+        document.getElementById("message").innerText = data.message;
 
-    loadAttendanceHistory();
+        loadAttendanceHistory();
+    } catch (err) {
+        document.getElementById("message").innerText = "Clock-out failed";
+        console.error(err);
+    }
 }
 
 /* =========================
    LOAD HISTORY
 ========================= */
 async function loadAttendanceHistory() {
-    const response = await fetch(`${API_BASE}/attendance-history`);
-    const data = await response.json();
+    try {
+        const response = await fetch(`${API_BASE}/attendance-history`);
+        const data = await response.json();
 
-    const tableBody = document.getElementById("attendanceTableBody");
-    tableBody.innerHTML = "";
+        const tableBody = document.getElementById("attendanceTableBody");
+        tableBody.innerHTML = "";
 
-    data.forEach(record => {
-        const row = document.createElement("tr");
+        data.forEach(record => {
+            const row = document.createElement("tr");
 
-        row.innerHTML = `
-            <td>${record.name}</td>
-            <td>${record.work_date}</td>
-            <td>${record.time_in || "N/A"}</td>
-            <td>${record.time_out || "N/A"}</td>
-        `;
+            row.innerHTML = `
+                <td>${record.name}</td>
+                <td>${record.work_date}</td>
+                <td>${record.time_in || "N/A"}</td>
+                <td>${record.time_out || "N/A"}</td>
+            `;
 
-        tableBody.appendChild(row);
-    });
+            tableBody.appendChild(row);
+        });
+
+    } catch (err) {
+        console.error("History load failed:", err);
+    }
 }
 
 /* =========================
