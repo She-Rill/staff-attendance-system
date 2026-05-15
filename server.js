@@ -21,8 +21,7 @@ const db = mysql.createConnection({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  port: process.env.DB_PORT || 3306,
-  timezone: '+03:00'
+  port: process.env.DB_PORT || 3306
 });
 
 db.connect((err) => {
@@ -41,7 +40,9 @@ function formatDate(value) {
   if (!value) return null;
 
   const date = new Date(value);
+
   return date.toLocaleDateString("en-GB", {
+    timeZone: "Africa/Nairobi",
     day: "2-digit",
     month: "short",
     year: "numeric"
@@ -52,7 +53,9 @@ function formatTime(value) {
   if (!value) return null;
 
   const date = new Date(value);
-  return date.toLocaleTimeString("en-GB", {
+
+  return date.toLocaleTimeString("en-KE", {
+    timeZone: "Africa/Nairobi",
     hour: "2-digit",
     minute: "2-digit",
     hour12: true
