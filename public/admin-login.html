@@ -47,29 +47,54 @@
     <input type="password" id="password" placeholder="Password">
 
     <button onclick="login()">Login</button>
-
     <p id="msg"></p>
 </div>
 
 <script>
 
+const API_BASE = "https://staff-attendance-backend-p39t.onrender.com";
+
 async function login() {
+
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
-    const res = await fetch("/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-    });
+    try {
 
-    const data = await res.json();
+        const response = await fetch(`${API_BASE}/admin/login`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username,
+                password
+            })
+        });
 
-    if (data.success) {
-        window.location.href = "/admin.html";
-    } else {
-        document.getElementById("msg").innerText = data.message;
+        const data = await response.json();
+
+        if (data.success) {
+
+            // SAVE JWT TOKEN
+            localStorage.setItem("adminToken", data.token);
+
+            // REDIRECT
+            window.location.href = "/admin.html";
+
+        } else {
+
+            alert(data.message || "Login failed");
+
+        }
+
+    } catch (err) {
+
+        console.error(err);
+        alert("Server error");
+
     }
+
 }
 
 </script>

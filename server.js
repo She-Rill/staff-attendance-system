@@ -3,7 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const mysql = require("mysql2");
 const cors = require("cors");
-const session = require("express-session");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 
@@ -21,24 +21,13 @@ app.use(cors({
 
 app.set("trust proxy", 1);
 
-/* =========================
-   SESSION
-========================= */
-app.use(session({
-  secret: "attendance_secret_key_2026",
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: true,        // REQUIRED on Render (HTTPS)
-    sameSite: "none"     // REQUIRED for cross-site cookies
-  }
-}));
 
 /* =========================
    ADMIN LOGIN
 ========================= */
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "3058";
+const JWT_SECRET = "arclights_super_secret_2026";
 
 /* =========================
    STAFF PINS
@@ -98,22 +87,58 @@ function formatTime(value) {
    ADMIN LOGIN
 ========================= */
 app.post("/admin/login", (req, res) => {
+
   const { username, password } = req.body;
 
-  if (username === ADMIN_USER && password === ADMIN_PASS) {
-    req.session.admin = true;
-    return res.json({ success: true });
+  if (username !== ADMIN_USER || password !== ADMIN_PASS) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid credentials"
+    });
   }
 
-  res.status(401).json({ success: false });
+  const token = jwt.sign(
+    { username: ADMIN_USER },
+    JWT_SECRET,
+    { expiresIn: "12h" }
+  );
+
+  res.json({
+    success: true,
+    token
+  });
+
 });
 
 /* =========================
    MIDDLEWARE
 ========================= */
 function requireAdmin(req, res, next) {
-  if (req.session?.admin) return next();
-  return res.status(401).json({ message: "Unauthorized" });
+
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    return res.status(401).json({
+      message: "No token provided"
+    });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+
+    if (err) {
+      return res.status(401).json({
+        message: "Invalid token"
+      });
+    }
+
+    req.admin = decoded;
+
+    next();
+
+  });
+
 }
 
 /* =========================
@@ -219,7 +244,7 @@ app.get("/attendance-history", (req, res) => {
 /* =========================
    ADMIN HISTORY (FIXED)
 ========================= */
-app.get("/admin/history", requireAdmin, (req, res) => {
+app.get("/admin/history", (req, res) => {
   const query = `
     SELECT * FROM attendance
     ORDER BY work_date DESC, time_in DESC

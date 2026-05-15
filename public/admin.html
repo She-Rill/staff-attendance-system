@@ -62,48 +62,81 @@
 </table>
 
 <script>
-
 const API_BASE = "https://staff-attendance-backend-p39t.onrender.com";
 
 /* =========================
-   LOAD ATTENDANCE HISTORY
+   GET JWT TOKEN
+========================= */
+function getToken() {
+    return localStorage.getItem("adminToken");
+}
+
+/* =========================
+   CHECK LOGIN
+========================= */
+function checkAuth() {
+    const token = getToken();
+
+    if (!token) {
+        alert("Not logged in");
+        window.location.href = "/admin-login.html";
+    }
+}
+
+/* =========================
+   LOAD DATA (PROTECTED)
 ========================= */
 async function loadData() {
 
+    checkAuth();
+
     try {
 
-        const res = await fetch(`${API_BASE}/attendance-history`);
+        const res = await fetch(`${API_BASE}/admin/history`, {
+            headers: {
+                "Authorization": "Bearer " + getToken()
+            }
+        });
+
+        if (res.status === 401) {
+            alert("Session expired. Please login again.");
+            localStorage.removeItem("adminToken");
+            window.location.href = "/admin-login.html";
+            return;
+        }
+
         const data = await res.json();
 
         const table = document.getElementById("table");
         table.innerHTML = "";
 
         data.forEach(row => {
-
             table.innerHTML += `
                 <tr>
                     <td>${row.name}</td>
                     <td>${row.work_date}</td>
-                    <td>${row.time_in || "N/A"}</td>
+                    <td>${row.time_in}</td>
                     <td>${row.time_out || "N/A"}</td>
                 </tr>
             `;
-
         });
 
     } catch (err) {
-
-        console.error(err);
-        alert("Failed to load attendance history");
-
+        console.error("Failed to load admin history:", err);
     }
-
 }
 
 /* =========================
    LOGOUT
 ========================= */
-function logout() {
+async function logout() {
+
+    localStorage.removeItem("adminToken");
+
+    await fetch(`${API_BASE}/admin/logout`, {
+        method: "POST"
+    });
+
     window.location.href = "/admin-login.html";
 }
 
