@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(express.static(__dirname + "/public"));
 
 /* =========================
-   PIN SYSTEM (ADD STAFF PINS HERE)
+   PIN SYSTEM
 ========================= */
 const staffPins = {
   "Geoffrey Onyango": "2587",
@@ -51,9 +51,7 @@ db.connect((err) => {
 function formatDate(value) {
   if (!value) return null;
 
-  const date = new Date(value);
-
-  return date.toLocaleDateString("en-GB", {
+  return new Date(value).toLocaleDateString("en-GB", {
     timeZone: "Africa/Nairobi",
     day: "2-digit",
     month: "short",
@@ -64,9 +62,7 @@ function formatDate(value) {
 function formatTime(value) {
   if (!value) return null;
 
-  const date = new Date(value);
-
-  return date.toLocaleTimeString("en-KE", {
+  return new Date(value).toLocaleTimeString("en-GB", {
     timeZone: "Africa/Nairobi",
     hour: "2-digit",
     minute: "2-digit",
@@ -75,7 +71,7 @@ function formatTime(value) {
 }
 
 /* =========================
-   GET ATTENDANCE HISTORY
+   GET ATTENDANCE HISTORY (USER VIEW)
 ========================= */
 app.get("/attendance-history", (req, res) => {
   const query = `
@@ -108,9 +104,12 @@ app.get("/attendance-history", (req, res) => {
 app.post("/clock-in", (req, res) => {
   const { name, pin } = req.body;
 
-  // PIN CHECK
+  if (!name || !pin) {
+    return res.status(400).json({ message: "Name and PIN required" });
+  }
+
   if (staffPins[name] !== pin) {
-    return res.json({ message: "Invalid PIN" });
+    return res.status(401).json({ message: "Invalid PIN" });
   }
 
   const check = `
@@ -152,9 +151,12 @@ app.post("/clock-in", (req, res) => {
 app.post("/clock-out", (req, res) => {
   const { name, pin } = req.body;
 
-  // PIN CHECK
+  if (!name || !pin) {
+    return res.status(400).json({ message: "Name and PIN required" });
+  }
+
   if (staffPins[name] !== pin) {
-    return res.json({ message: "Invalid PIN" });
+    return res.status(401).json({ message: "Invalid PIN" });
   }
 
   const check = `
@@ -190,6 +192,60 @@ app.post("/clock-out", (req, res) => {
 
       res.json({ message: "Clocked out successfully" });
     });
+  });
+});
+
+/* =========================
+   ADMIN - ACTIVE STAFF
+========================= */
+app.get("/admin/active", (req, res) => {
+  const query = `
+    SELECT name, time_in
+    FROM attendance
+    WHERE time_out IS NULL
+    ORDER BY time_in DESC
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ message: "Database error" });
+    }
+
+    const formatted = results.map(r => ({
+      name: r.name,
+      time_in: formatTime(r.time_in)
+    }));
+
+    res.json(formatted);
+  });
+});
+
+/* =========================
+   ADMIN - FULL HISTORY
+========================= */
+app.get("/admin/history", (req, res) => {
+  const query = `
+    SELECT id, name, work_date, time_in, time_out
+    FROM attendance
+    ORDER BY work_date DESC, time_in DESC
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ message: "Database error" });
+    }
+
+    const formatted = results.map((row) => ({
+      id: row.id,
+      name: row.name,
+      work_date: formatDate(row.work_date),
+      time_in: formatTime(row.time_in),
+      time_out: formatTime(row.time_out)
+    }));
+
+    res.json(formatted);
   });
 });
 
