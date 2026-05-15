@@ -62,44 +62,54 @@
 </table>
 
 <script>
+
 const API_BASE = "https://staff-attendance-backend-p39t.onrender.com";
 
-function checkLogin() {
-    const isLoggedIn = localStorage.getItem("adminLoggedIn");
+/* =========================
+   LOAD ATTENDANCE HISTORY
+========================= */
+async function loadData() {
 
-    if (!isLoggedIn) {
-        window.location.href = "/admin-login.html";
+    try {
+
+        const res = await fetch(`${API_BASE}/attendance-history`);
+        const data = await res.json();
+
+        const table = document.getElementById("table");
+        table.innerHTML = "";
+
+        data.forEach(row => {
+
+            table.innerHTML += `
+                <tr>
+                    <td>${row.name}</td>
+                    <td>${row.work_date}</td>
+                    <td>${row.time_in || "N/A"}</td>
+                    <td>${row.time_out || "N/A"}</td>
+                </tr>
+            `;
+
+        });
+
+    } catch (err) {
+        console.error(err);
+        alert("Failed to load attendance history");
     }
 }
 
-async function loadData() {
-    checkLogin();
-
-    const res = await fetch(`${API_BASE}/attendance-history`);
-    const data = await res.json();
-
-    const table = document.getElementById("table");
-    table.innerHTML = "";
-
-    data.forEach(row => {
-        table.innerHTML += `
-            <tr>
-                <td>${row.name}</td>
-                <td>${row.work_date}</td>
-                <td>${row.time_in}</td>
-                <td>${row.time_out || "N/A"}</td>
-            </tr>
-        `;
-    });
-}
-
+/* =========================
+   LOGOUT
+========================= */
 function logout() {
     localStorage.removeItem("adminLoggedIn");
     window.location.href = "/admin-login.html";
 }
 
+/* =========================
+   INIT
+========================= */
 loadData();
-</script>
 
+</script>
 </body>
 </html>

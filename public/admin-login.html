@@ -66,35 +66,24 @@ async function login() {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-                username,
-                password
-            })
+            body: JSON.stringify({ username, password })
         });
 
         const data = await response.json();
 
         if (data.success) {
 
-            // SAVE JWT TOKEN
-            localStorage.setItem("adminToken", data.token);
-
-            // REDIRECT
+            localStorage.setItem("adminLoggedIn", "true");
             window.location.href = "/admin.html";
 
         } else {
-
             alert(data.message || "Login failed");
-
         }
 
     } catch (err) {
-
         console.error(err);
         alert("Server error");
-
     }
-
 }
 
 </script>

@@ -55,8 +55,7 @@ app.post("/admin/login", (req, res) => {
 
   if (username === ADMIN_USER && password === ADMIN_PASS) {
     return res.json({
-      success: true,
-      message: "Login successful"
+      success: true
     });
   }
 
