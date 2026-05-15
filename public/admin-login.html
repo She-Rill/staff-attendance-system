@@ -2,7 +2,9 @@
 <html>
 <head>
     <title>Admin Login</title>
+
     <style>
+
         body {
             font-family: Arial;
             display: flex;
@@ -10,81 +12,187 @@
             align-items: center;
             height: 100vh;
             background: #f4f6f9;
+            margin: 0;
         }
 
         .box {
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            width: 300px;
+            padding: 35px;
+            border-radius: 12px;
+            width: 320px;
             text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        }
+
+        h2 {
+            color: #1e3a8a;
+            margin-bottom: 20px;
         }
 
         input {
-            width: 90%;
-            padding: 10px;
+            width: 100%;
+            padding: 12px;
             margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            box-sizing: border-box;
         }
 
         button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             background: #1e3a8a;
             color: white;
             border: none;
+            border-radius: 6px;
             cursor: pointer;
+            font-size: 15px;
+            margin-top: 10px;
         }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        #msg {
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 20px;
+        }
+
+        .error {
+            color: #dc2626;
+        }
+
+        .success {
+            color: #16a34a;
+        }
+
     </style>
+
 </head>
 
 <body>
 
 <div class="box">
+
     <h2>Admin Login</h2>
 
-    <input type="text" id="username" placeholder="Username">
-    <input type="password" id="password" placeholder="Password">
+    <input 
+        type="text" 
+        id="username" 
+        placeholder="Username"
+        autocomplete="off"
+    >
 
-    <button onclick="login()">Login</button>
+    <input 
+        type="password" 
+        id="password" 
+        placeholder="Password"
+    >
+
+    <button onclick="login()">
+        Login
+    </button>
+
     <p id="msg"></p>
+
 </div>
 
 <script>
 
 const API_BASE = "https://staff-attendance-backend-p39t.onrender.com";
 
+/* =========================
+   LOGIN
+========================= */
 async function login() {
 
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    const msg = document.getElementById("msg");
+
+    /* =========================
+       EMPTY FIELD CHECK
+    ========================= */
+    if (!username || !password) {
+
+        msg.innerText = "Please enter username and password";
+        msg.className = "error";
+
+        return;
+    }
 
     try {
 
         const response = await fetch(`${API_BASE}/admin/login`, {
+
             method: "POST",
+
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ username, password })
+
+            body: JSON.stringify({
+                username,
+                password
+            })
+
         });
 
         const data = await response.json();
 
-        if (data.success) {
+        /* =========================
+           SUCCESS
+        ========================= */
+        if (response.ok && data.success) {
 
             localStorage.setItem("adminLoggedIn", "true");
-            window.location.href = "/admin.html";
 
-        } else {
-            alert(data.message || "Login failed");
+            msg.innerText = "Login successful...";
+            msg.className = "success";
+
+            setTimeout(() => {
+                window.location.href = "/admin.html";
+            }, 1000);
+
         }
 
-    } catch (err) {
-        console.error(err);
-        alert("Server error");
+        /* =========================
+           INVALID LOGIN
+        ========================= */
+        else {
+
+            msg.innerText = data.message || "Invalid credentials";
+            msg.className = "error";
+
+        }
+
     }
+
+    catch (err) {
+
+        console.error(err);
+
+        msg.innerText = "Server connection failed";
+        msg.className = "error";
+
+    }
+
 }
+
+/* =========================
+   ENTER KEY SUPPORT
+========================= */
+document.addEventListener("keydown", function(event) {
+
+    if (event.key === "Enter") {
+        login();
+    }
+
+});
 
 </script>
 

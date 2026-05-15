@@ -2,34 +2,63 @@
 <html>
 <head>
     <title>Admin Dashboard</title>
+
     <style>
+
         body {
             font-family: Arial;
             background: #f4f6f9;
             padding: 20px;
+            margin: 0;
         }
 
         h1 {
             color: #1e3a8a;
+            margin-bottom: 10px;
         }
 
-        button {
-            padding: 10px;
-            background: red;
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .logout-btn {
+            padding: 10px 16px;
+            background: #dc2626;
             color: white;
             border: none;
+            border-radius: 6px;
             cursor: pointer;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            opacity: 0.9;
+        }
+
+        .stats {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
             margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-size: 16px;
         }
 
         table {
             width: 100%;
             background: white;
             border-collapse: collapse;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         th, td {
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
             text-align: center;
         }
@@ -38,27 +67,60 @@
             background: #1e3a8a;
             color: white;
         }
+
+        tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        .status-in {
+            color: green;
+            font-weight: bold;
+        }
+
+        .status-out {
+            color: red;
+            font-weight: bold;
+        }
+
     </style>
+
 </head>
 
 <body>
 
-<h1>Admin Dashboard</h1>
+<div class="top-bar">
 
-<button onclick="logout()">Logout</button>
+    <div>
+        <h1>Admin Dashboard</h1>
+        <p>Arclights Limited Attendance Records</p>
+    </div>
+
+    <button class="logout-btn" onclick="logout()">
+        Logout
+    </button>
+
+</div>
+
+<div class="stats" id="stats">
+    Loading statistics...
+</div>
 
 <h2>Attendance History</h2>
 
 <table>
+
     <thead>
         <tr>
             <th>Name</th>
             <th>Date</th>
             <th>Clock In</th>
             <th>Clock Out</th>
+            <th>Status</th>
         </tr>
     </thead>
+
     <tbody id="table"></tbody>
+
 </table>
 
 <script>
@@ -66,50 +128,134 @@
 const API_BASE = "https://staff-attendance-backend-p39t.onrender.com";
 
 /* =========================
+   CHECK LOGIN
+========================= */
+function checkLogin() {
+
+    const loggedIn = localStorage.getItem("adminLoggedIn");
+
+    if (loggedIn !== "true") {
+
+        alert("Please login first");
+        window.location.href = "/admin-login.html";
+
+    }
+
+}
+
+/* =========================
+   FORMAT DATE
+========================= */
+function formatDate(dateString) {
+
+    const date = new Date(dateString);
+
+    return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+    });
+
+}
+
+/* =========================
+   FORMAT TIME
+========================= */
+function formatTime(timeString) {
+
+    if (!timeString) return "N/A";
+
+    const date = new Date(timeString);
+
+    return date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    });
+
+}
+
+/* =========================
    LOAD ATTENDANCE HISTORY
 ========================= */
 async function loadData() {
 
+    checkLogin();
+
     try {
 
         const res = await fetch(`${API_BASE}/attendance-history`);
+
         const data = await res.json();
 
         const table = document.getElementById("table");
+
         table.innerHTML = "";
 
+        let totalRecords = data.length;
+        let clockedIn = 0;
+        let clockedOut = 0;
+
         data.forEach(row => {
+
+            const status = row.time_out
+                ? "<span class='status-out'>Clocked Out</span>"
+                : "<span class='status-in'>Still In</span>";
+
+            if (row.time_out) {
+                clockedOut++;
+            } else {
+                clockedIn++;
+            }
 
             table.innerHTML += `
                 <tr>
                     <td>${row.name}</td>
-                    <td>${row.work_date}</td>
-                    <td>${row.time_in || "N/A"}</td>
-                    <td>${row.time_out || "N/A"}</td>
+                    <td>${formatDate(row.work_date)}</td>
+                    <td>${formatTime(row.time_in)}</td>
+                    <td>${formatTime(row.time_out)}</td>
+                    <td>${status}</td>
                 </tr>
             `;
 
         });
 
+        document.getElementById("stats").innerHTML = `
+            <strong>Total Records:</strong> ${totalRecords}
+            &nbsp;&nbsp; | &nbsp;&nbsp;
+            <strong>Still In:</strong> ${clockedIn}
+            &nbsp;&nbsp; | &nbsp;&nbsp;
+            <strong>Clocked Out:</strong> ${clockedOut}
+        `;
+
     } catch (err) {
+
         console.error(err);
         alert("Failed to load attendance history");
+
     }
+
 }
 
 /* =========================
    LOGOUT
 ========================= */
 function logout() {
+
     localStorage.removeItem("adminLoggedIn");
+
     window.location.href = "/admin-login.html";
+
 }
 
 /* =========================
-   INIT
+   AUTO REFRESH
 ========================= */
 loadData();
 
+setInterval(loadData, 5000);
+
 </script>
+
 </body>
 </html>
