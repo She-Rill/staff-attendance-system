@@ -66,44 +66,44 @@
 const API_BASE = "https://staff-attendance-backend-p39t.onrender.com";
 
 /* =========================
-   LOAD DATA (FIXED)
+   LOAD ATTENDANCE HISTORY
 ========================= */
 async function loadData() {
-    try {
-        const res = await fetch(`${API_BASE}/admin/history`, {
-            credentials: "include"
-        });
 
+    try {
+
+        const res = await fetch(`${API_BASE}/attendance-history`);
         const data = await res.json();
 
         const table = document.getElementById("table");
         table.innerHTML = "";
 
         data.forEach(row => {
+
             table.innerHTML += `
                 <tr>
                     <td>${row.name}</td>
                     <td>${row.work_date}</td>
-                    <td>${row.time_in}</td>
+                    <td>${row.time_in || "N/A"}</td>
                     <td>${row.time_out || "N/A"}</td>
                 </tr>
             `;
+
         });
 
     } catch (err) {
-        console.error("Failed to load admin history:", err);
+
+        console.error(err);
+        alert("Failed to load attendance history");
+
     }
+
 }
 
 /* =========================
-   LOGOUT (FIXED)
+   LOGOUT
 ========================= */
-async function logout() {
-    await fetch(`${API_BASE}/admin/logout`, {
-        method: "POST",
-        credentials: "include"
-    });
-
+function logout() {
     window.location.href = "/admin-login.html";
 }
 
