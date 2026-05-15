@@ -11,12 +11,15 @@ const app = express();
    CORS (FIXED FOR SESSIONS)
 ========================= */
 app.use(cors({
-  origin: true,
-  credentials: true
+  origin: [
+    "http://localhost:3000",
+    "https://staff-attendance-bacXXXXX.onrender.com" // your frontend if hosted
+  ],
+  credentials: true,
+  methods: ["GET", "POST"]
 }));
 
-app.use(express.json());
-app.use(express.static(__dirname + "/public"));
+app.set("trust proxy", 1);
 
 /* =========================
    SESSION
@@ -26,7 +29,8 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false
+    secure: true,        // REQUIRED on Render (HTTPS)
+    sameSite: "none"     // REQUIRED for cross-site cookies
   }
 }));
 
