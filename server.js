@@ -10,8 +10,20 @@ app.use(cors({
   origin: "*",
   methods: ["GET", "POST"]
 }));
+
 app.use(express.json());
 app.use(express.static(__dirname + "/public"));
+
+/* =========================
+   PIN SYSTEM (ADD STAFF PINS HERE)
+========================= */
+const staffPins = {
+  "Geoffrey Onyango": "2587",
+  "Jackline Mbithi": "3469",
+  "Sherill Cornel": "8136",
+  "Owet Cynthia": "4387",
+  "Anthony Kihara": "5835"
+};
 
 /* =========================
    MYSQL CONNECTION
@@ -91,10 +103,15 @@ app.get("/attendance-history", (req, res) => {
 });
 
 /* =========================
-   CLOCK IN
+   CLOCK IN (WITH PIN)
 ========================= */
 app.post("/clock-in", (req, res) => {
-  const { name } = req.body;
+  const { name, pin } = req.body;
+
+  // PIN CHECK
+  if (staffPins[name] !== pin) {
+    return res.json({ message: "Invalid PIN" });
+  }
 
   const check = `
     SELECT * FROM attendance
@@ -130,10 +147,15 @@ app.post("/clock-in", (req, res) => {
 });
 
 /* =========================
-   CLOCK OUT
+   CLOCK OUT (WITH PIN)
 ========================= */
 app.post("/clock-out", (req, res) => {
-  const { name } = req.body;
+  const { name, pin } = req.body;
+
+  // PIN CHECK
+  if (staffPins[name] !== pin) {
+    return res.json({ message: "Invalid PIN" });
+  }
 
   const check = `
     SELECT * FROM attendance
