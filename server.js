@@ -20,7 +20,7 @@ const ADMIN_USER = "admin";
 const ADMIN_PASS = "3058";
 
 /* =========================
-   PIN SYSTEM
+   STAFF PIN SYSTEM
 ========================= */
 const staffPins = {
   "Geoffrey Onyango": "2587",
@@ -85,7 +85,7 @@ app.post("/admin/logout", (req, res) => {
 });
 
 /* =========================
-   GET ATTENDANCE HISTORY (RAW)
+   ATTENDANCE HISTORY (RAW SAFE)
 ========================= */
 app.get("/attendance-history", (req, res) => {
   const query = `
@@ -100,12 +100,13 @@ app.get("/attendance-history", (req, res) => {
       return res.status(500).json({ message: "Database error" });
     }
 
+    // Send RAW values (frontend will format safely)
     res.json(results);
   });
 });
 
 /* =========================
-   CLOCK IN (FIXED TIME)
+   CLOCK IN (SAFE + NO DUPLICATES)
 ========================= */
 app.post("/clock-in", (req, res) => {
   const { name, pin } = req.body || {};
@@ -138,17 +139,12 @@ app.post("/clock-in", (req, res) => {
       });
     }
 
-    const timeIn = new Date()
-      .toISOString()
-      .slice(0, 19)
-      .replace("T", " ");
-
     const insertQuery = `
       INSERT INTO attendance (name, work_date, time_in)
-      VALUES (?, CURDATE(), ?)
+      VALUES (?, CURDATE(), NOW())
     `;
 
-    db.query(insertQuery, [name, timeIn], (err2) => {
+    db.query(insertQuery, [name], (err2) => {
       if (err2) {
         console.log(err2);
         return res.status(500).json({ message: "Clock-in failed" });
@@ -160,7 +156,7 @@ app.post("/clock-in", (req, res) => {
 });
 
 /* =========================
-   CLOCK OUT (FIXED TIME)
+   CLOCK OUT (SAFE)
 ========================= */
 app.post("/clock-out", (req, res) => {
   const { name, pin } = req.body || {};
@@ -193,18 +189,13 @@ app.post("/clock-out", (req, res) => {
       });
     }
 
-    const timeOut = new Date()
-      .toISOString()
-      .slice(0, 19)
-      .replace("T", " ");
-
     const updateQuery = `
       UPDATE attendance
-      SET time_out = ?
+      SET time_out = NOW()
       WHERE id = ?
     `;
 
-    db.query(updateQuery, [timeOut, results[0].id], (err2) => {
+    db.query(updateQuery, [results[0].id], (err2) => {
       if (err2) {
         console.log(err2);
         return res.status(500).json({ message: "Clock-out failed" });

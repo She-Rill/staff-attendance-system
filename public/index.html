@@ -4,7 +4,6 @@
     <title>Arclights Limited Attendance</title>
 
     <style>
-
         body {
             margin: 0;
             padding: 0;
@@ -22,7 +21,6 @@
         .header-content {
             font-size: 28px;
             font-weight: bold;
-            margin-bottom: 10px;
         }
 
         .current-time {
@@ -43,11 +41,6 @@
             border-radius: 12px;
             text-align: center;
             box-shadow: 0px 2px 10px rgba(0,0,0,0.1);
-            transition: 0.3s;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
         }
 
         .avatar {
@@ -67,11 +60,9 @@
         input {
             width: 90%;
             padding: 10px;
-            margin-top: 10px;
-            margin-bottom: 10px;
+            margin: 10px 0;
             border: 1px solid #ccc;
             border-radius: 6px;
-            font-size: 14px;
         }
 
         button {
@@ -81,20 +72,10 @@
             cursor: pointer;
             border-radius: 6px;
             color: white;
-            font-size: 14px;
         }
 
-        .in {
-            background: #16a34a;
-        }
-
-        .out {
-            background: #dc2626;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
+        .in { background: #16a34a; }
+        .out { background: #dc2626; }
 
         #message {
             text-align: center;
@@ -102,213 +83,76 @@
             font-weight: bold;
             margin: 20px;
             padding: 15px;
-            background: white;
-            border-left: 5px solid #1e3a8a;
             border-radius: 6px;
+            background: #fff;
+            border-left: 5px solid #1e3a8a;
             min-height: 30px;
-            box-shadow: 0px 2px 10px rgba(0,0,0,0.1);
         }
 
-        .success {
-            color: #16a34a;
-        }
-
-        .error {
-            color: #dc2626;
-        }
+        .success { color: #16a34a; }
+        .error { color: #dc2626; }
 
     </style>
-
 </head>
 
 <body>
 
 <header>
-
-    <div class="header-content">
-        Arclights Limited Attendance System
-    </div>
-
+    <div class="header-content">Arclights Limited Attendance System</div>
     <div class="current-time" id="liveTime"></div>
-
 </header>
 
 <div id="message"></div>
 
 <div class="container">
 
-    <!-- Geoffrey -->
+    <!-- Employees -->
     <div class="card">
-
         <div class="avatar">G</div>
-
         <h2>Geoffrey Onyango</h2>
-
-        <input
-            type="password"
-            id="pin-Geoffrey-Onyango"
-            placeholder="Enter PIN"
-        >
-
-        <button
-            class="in"
-            onclick="clockIn('Geoffrey Onyango')"
-        >
-            Clock In
-        </button>
-
-        <button
-            class="out"
-            onclick="clockOut('Geoffrey Onyango')"
-        >
-            Clock Out
-        </button>
-
+        <input type="password" id="pin-Geoffrey-Onyango" placeholder="Enter PIN">
+        <button class="in" onclick="clockIn('Geoffrey Onyango')">Clock In</button>
+        <button class="out" onclick="clockOut('Geoffrey Onyango')">Clock Out</button>
     </div>
 
-    <!-- Jackline -->
     <div class="card">
-
         <div class="avatar">J</div>
-
         <h2>Jackline Mbithi</h2>
-
-        <input
-            type="password"
-            id="pin-Jackline-Mbithi"
-            placeholder="Enter PIN"
-        >
-
-        <button
-            class="in"
-            onclick="clockIn('Jackline Mbithi')"
-        >
-            Clock In
-        </button>
-
-        <button
-            class="out"
-            onclick="clockOut('Jackline Mbithi')"
-        >
-            Clock Out
-        </button>
-
+        <input type="password" id="pin-Jackline-Mbithi">
+        <button class="in" onclick="clockIn('Jackline Mbithi')">Clock In</button>
+        <button class="out" onclick="clockOut('Jackline Mbithi')">Clock Out</button>
     </div>
 
-    <!-- Sherill -->
     <div class="card">
-
         <div class="avatar">S</div>
-
         <h2>Sherill Cornel</h2>
-
-        <input
-            type="password"
-            id="pin-Sherill-Cornel"
-            placeholder="Enter PIN"
-        >
-
-        <button
-            class="in"
-            onclick="clockIn('Sherill Cornel')"
-        >
-            Clock In
-        </button>
-
-        <button
-            class="out"
-            onclick="clockOut('Sherill Cornel')"
-        >
-            Clock Out
-        </button>
-
+        <input type="password" id="pin-Sherill-Cornel">
+        <button class="in" onclick="clockIn('Sherill Cornel')">Clock In</button>
+        <button class="out" onclick="clockOut('Sherill Cornel')">Clock Out</button>
     </div>
 
-    <!-- Owet -->
     <div class="card">
-
         <div class="avatar">O</div>
-
         <h2>Owet Cynthia</h2>
-
-        <input
-            type="password"
-            id="pin-Owet-Cynthia"
-            placeholder="Enter PIN"
-        >
-
-        <button
-            class="in"
-            onclick="clockIn('Owet Cynthia')"
-        >
-            Clock In
-        </button>
-
-        <button
-            class="out"
-            onclick="clockOut('Owet Cynthia')"
-        >
-            Clock Out
-        </button>
-
+        <input type="password" id="pin-Owet-Cynthia">
+        <button class="in" onclick="clockIn('Owet Cynthia')">Clock In</button>
+        <button class="out" onclick="clockOut('Owet Cynthia')">Clock Out</button>
     </div>
 
-    <!-- Anthony -->
     <div class="card">
-
         <div class="avatar">A</div>
-
         <h2>Anthony Kihara</h2>
-
-        <input
-            type="password"
-            id="pin-Anthony-Kihara"
-            placeholder="Enter PIN"
-        >
-
-        <button
-            class="in"
-            onclick="clockIn('Anthony Kihara')"
-        >
-            Clock In
-        </button>
-
-        <button
-            class="out"
-            onclick="clockOut('Anthony Kihara')"
-        >
-            Clock Out
-        </button>
-
+        <input type="password" id="pin-Anthony-Kihara">
+        <button class="in" onclick="clockIn('Anthony Kihara')">Clock In</button>
+        <button class="out" onclick="clockOut('Anthony Kihara')">Clock Out</button>
     </div>
 
-    <!-- Wambui -->
     <div class="card">
-
         <div class="avatar">W</div>
-
         <h2>Wambui Kinuthia</h2>
-
-        <input
-            type="password"
-            id="pin-Wambui-Kinuthia"
-            placeholder="Enter PIN"
-        >
-
-        <button
-            class="in"
-            onclick="clockIn('Wambui Kinuthia')"
-        >
-            Clock In
-        </button>
-
-        <button
-            class="out"
-            onclick="clockOut('Wambui Kinuthia')"
-        >
-            Clock Out
-        </button>
-
+        <input type="password" id="pin-Wambui-Kinuthia">
+        <button class="in" onclick="clockIn('Wambui Kinuthia')">Clock In</button>
+        <button class="out" onclick="clockOut('Wambui Kinuthia')">Clock Out</button>
     </div>
 
 </div>
@@ -320,66 +164,39 @@ const API_BASE = "https://staff-attendance-backend-p39t.onrender.com";
 /* =========================
    LIVE CLOCK
 ========================= */
-function updateLiveTime() {
-
+setInterval(() => {
     const now = new Date();
-
     document.getElementById("liveTime").innerText =
         now.toLocaleString("en-KE", {
             timeZone: "Africa/Nairobi",
+            hour12: true,
             weekday: "short",
             year: "numeric",
             month: "short",
             day: "2-digit",
             hour: "2-digit",
             minute: "2-digit",
-            second: "2-digit",
-            hour12: true
+            second: "2-digit"
         });
-
-}
-
-setInterval(updateLiveTime, 1000);
-
-updateLiveTime();
+}, 1000);
 
 /* =========================
-   GET PIN
+   HELPERS
 ========================= */
 function getPin(name) {
-
     const id = "pin-" + name.replace(/ /g, "-");
-
     return document.getElementById(id).value.trim();
-
 }
 
-/* =========================
-   CLEAR PIN
-========================= */
 function clearPin(name) {
-
     const id = "pin-" + name.replace(/ /g, "-");
-
     document.getElementById(id).value = "";
-
 }
 
-/* =========================
-   SHOW MESSAGE
-========================= */
-function showMessage(message, type = "success") {
-
-    const messageBox = document.getElementById("message");
-
-    messageBox.innerText = message;
-
-    if (type === "error") {
-        messageBox.className = "error";
-    } else {
-        messageBox.className = "success";
-    }
-
+function showMessage(msg, type = "success") {
+    const box = document.getElementById("message");
+    box.innerText = msg;
+    box.className = type;
 }
 
 /* =========================
@@ -387,57 +204,33 @@ function showMessage(message, type = "success") {
 ========================= */
 async function clockIn(name) {
 
+    const pin = getPin(name);
+
+    if (!pin) {
+        showMessage("Enter PIN first", "error");
+        return;
+    }
+
     try {
-
-        const pin = getPin(name);
-
-        if (!pin) {
-
-            showMessage("Please enter your PIN", "error");
-
-            return;
-
-        }
-
-        const response = await fetch(`${API_BASE}/clock-in`, {
-
+        const res = await fetch(`${API_BASE}/clock-in`, {
             method: "POST",
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-                name,
-                pin
-            })
-
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, pin })
         });
 
-        const data = await response.json();
+        const data = await res.json();
 
-        if (!response.ok) {
-
+        if (!res.ok) {
             showMessage(data.message || "Clock-in failed", "error");
-
             return;
-
         }
 
         showMessage(data.message, "success");
-
         clearPin(name);
 
+    } catch (err) {
+        showMessage("Server error", "error");
     }
-
-    catch (err) {
-
-        console.error(err);
-
-        showMessage("Server connection failed", "error");
-
-    }
-
 }
 
 /* =========================
@@ -445,57 +238,33 @@ async function clockIn(name) {
 ========================= */
 async function clockOut(name) {
 
+    const pin = getPin(name);
+
+    if (!pin) {
+        showMessage("Enter PIN first", "error");
+        return;
+    }
+
     try {
-
-        const pin = getPin(name);
-
-        if (!pin) {
-
-            showMessage("Please enter your PIN", "error");
-
-            return;
-
-        }
-
-        const response = await fetch(`${API_BASE}/clock-out`, {
-
+        const res = await fetch(`${API_BASE}/clock-out`, {
             method: "POST",
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-                name,
-                pin
-            })
-
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, pin })
         });
 
-        const data = await response.json();
+        const data = await res.json();
 
-        if (!response.ok) {
-
+        if (!res.ok) {
             showMessage(data.message || "Clock-out failed", "error");
-
             return;
-
         }
 
         showMessage(data.message, "success");
-
         clearPin(name);
 
+    } catch (err) {
+        showMessage("Server error", "error");
     }
-
-    catch (err) {
-
-        console.error(err);
-
-        showMessage("Server connection failed", "error");
-
-    }
-
 }
 
 </script>
