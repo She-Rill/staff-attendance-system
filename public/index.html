@@ -170,21 +170,6 @@
 
 </div>
 
-<div style="padding: 30px;">
-    <h2>Attendance History</h2>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Date</th>
-                <th>Clock In</th>
-                <th>Clock Out</th>
-            </tr>
-        </thead>
-        <tbody id="attendanceTableBody"></tbody>
-    </table>
-</div>
 
 <script>
 
@@ -234,7 +219,6 @@ async function clockIn(name) {
         const data = await response.json();
         document.getElementById("message").innerText = data.message;
 
-        loadAttendanceHistory();
     } catch (err) {
         document.getElementById("message").innerText = "Clock-in failed";
         console.error(err);
@@ -257,49 +241,14 @@ async function clockOut(name) {
         const data = await response.json();
         document.getElementById("message").innerText = data.message;
 
-        loadAttendanceHistory();
     } catch (err) {
         document.getElementById("message").innerText = "Clock-out failed";
         console.error(err);
     }
 }
 
-/* =========================
-   LOAD HISTORY
-========================= */
-async function loadAttendanceHistory() {
-    try {
-        const response = await fetch(`${API_BASE}/attendance-history`);
-        const data = await response.json();
-
-        const tableBody = document.getElementById("attendanceTableBody");
-        tableBody.innerHTML = "";
-
-        data.forEach(record => {
-            const row = document.createElement("tr");
-
-            row.innerHTML = `
-                <td>${record.name}</td>
-                <td>${record.work_date}</td>
-                <td>${record.time_in || "N/A"}</td>
-                <td>${record.time_out || "N/A"}</td>
-            `;
-
-            tableBody.appendChild(row);
-        });
-
-    } catch (err) {
-        console.error("History load failed:", err);
-    }
-}
-
-/* =========================
-   INIT
-========================= */
-loadAttendanceHistory();
-setInterval(loadAttendanceHistory, 5000);
 
 </script>
 
 </body>
-</html>
+</html>i
