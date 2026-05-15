@@ -1,3 +1,4 @@
+app.use(express.json());
 require("dotenv").config();
 
 const express = require("express");
@@ -88,7 +89,16 @@ function formatTime(value) {
 ========================= */
 app.post("/admin/login", (req, res) => {
 
-  const { username, password } = req.body;
+  const body = req.body || {};
+  const username = body.username;
+  const password = body.password;
+
+  if (!username || !password) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing username or password"
+    });
+  }
 
   if (username !== ADMIN_USER || password !== ADMIN_PASS) {
     return res.status(401).json({
