@@ -1,37 +1,23 @@
-app.use(express.json());
 require("dotenv").config();
 
 const express = require("express");
 const mysql = require("mysql2");
 const cors = require("cors");
-const jwt = require("jsonwebtoken");
 
 const app = express();
 
-/* =========================
-   CORS (FIXED FOR SESSIONS)
-========================= */
-app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "https://staff-attendance-bacXXXXX.onrender.com" // your frontend if hosted
-  ],
-  credentials: true,
-  methods: ["GET", "POST"]
-}));
-
-app.set("trust proxy", 1);
-
+app.use(cors());
+app.use(express.json());
+app.use(express.static(__dirname + "/public"));
 
 /* =========================
-   ADMIN LOGIN
+   ADMIN CREDENTIALS (SIMPLE)
 ========================= */
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "3058";
-const JWT_SECRET = "arclights_super_secret_2026";
 
 /* =========================
-   STAFF PINS
+   PIN SYSTEM
 ========================= */
 const staffPins = {
   "Geoffrey Onyango": "2587",
@@ -54,7 +40,7 @@ const db = mysql.createConnection({
 
 db.connect((err) => {
   if (err) {
-    console.log("❌ DB connection failed");
+    console.log("❌ Database connection failed");
     console.log(err);
     return;
   }
@@ -62,135 +48,73 @@ db.connect((err) => {
 });
 
 /* =========================
-   FORMATTERS
-========================= */
-function formatDate(value) {
-  if (!value) return null;
-  return new Date(value).toLocaleDateString("en-GB", {
-    timeZone: "Africa/Nairobi",
-    day: "2-digit",
-    month: "short",
-    year: "numeric"
-  });
-}
-
-function formatTime(value) {
-  if (!value) return null;
-  return new Date(value).toLocaleTimeString("en-GB", {
-    timeZone: "Africa/Nairobi",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true
-  });
-}
-
-/* =========================
-   ADMIN LOGIN
+   ADMIN LOGIN (NO JWT, NO SESSION)
 ========================= */
 app.post("/admin/login", (req, res) => {
+  const { username, password } = req.body || {};
 
-  const body = req.body || {};
-  const username = body.username;
-  const password = body.password;
-
-  if (!username || !password) {
-    return res.status(400).json({
-      success: false,
-      message: "Missing username or password"
+  if (username === ADMIN_USER && password === ADMIN_PASS) {
+    return res.json({
+      success: true,
+      message: "Login successful"
     });
   }
 
-  if (username !== ADMIN_USER || password !== ADMIN_PASS) {
-    return res.status(401).json({
-      success: false,
-      message: "Invalid credentials"
-    });
-  }
-
-  const token = jwt.sign(
-    { username: ADMIN_USER },
-    JWT_SECRET,
-    { expiresIn: "12h" }
-  );
-
-  res.json({
-    success: true,
-    token
+  return res.status(401).json({
+    success: false,
+    message: "Invalid credentials"
   });
-
 });
 
 /* =========================
-   MIDDLEWARE
-========================= */
-function requireAdmin(req, res, next) {
-
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    return res.status(401).json({
-      message: "No token provided"
-    });
-  }
-
-  const token = authHeader.split(" ")[1];
-
-  jwt.verify(token, JWT_SECRET, (err, decoded) => {
-
-    if (err) {
-      return res.status(401).json({
-        message: "Invalid token"
-      });
-    }
-
-    req.admin = decoded;
-
-    next();
-
-  });
-
-}
-
-/* =========================
-   LOGOUT
+   ADMIN LOGOUT (FRONTEND HANDLED)
 ========================= */
 app.post("/admin/logout", (req, res) => {
-  req.session.destroy();
   res.json({ success: true });
+});
+
+/* =========================
+   ATTENDANCE HISTORY (FOR ADMIN)
+========================= */
+app.get("/attendance-history", (req, res) => {
+  const query = `
+    SELECT id, name, work_date, time_in, time_out
+    FROM attendance
+    ORDER BY work_date DESC, time_in DESC
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ message: "Database error" });
+    }
+
+    res.json(results);
+  });
 });
 
 /* =========================
    CLOCK IN
 ========================= */
 app.post("/clock-in", (req, res) => {
-  const { name, pin } = req.body;
+  const { name, pin } = req.body || {};
 
   if (staffPins[name] !== pin) {
     return res.status(401).json({ message: "Invalid PIN" });
   }
 
-  const check = `
-    SELECT * FROM attendance
-    WHERE name = ? AND work_date = CURDATE() AND time_out IS NULL
+  const query = `
+    INSERT INTO attendance (name, work_date, time_in)
+    VALUES (?, CURDATE(), NOW())
   `;
 
-  db.query(check, [name], (err, result) => {
-    if (err) return res.status(500).json({ message: err.message });
-
-    if (result.length > 0) {
-      return res.json({ message: "Already clocked in" });
+  db.query(query, [name], (err) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ message: "Insert failed" });
     }
 
-    const insert = `
-      INSERT INTO attendance (name, work_date, time_in)
-      VALUES (?, CURDATE(), NOW())
-    `;
-
-    db.query(insert, [name], (err) => {
-      if (err) return res.status(500).json({ message: err.message });
-
-      res.json({ message: "Clocked in successfully" });
-    });
+    res.json({ message: "Clocked in successfully" });
   });
 });
 
@@ -198,77 +122,25 @@ app.post("/clock-in", (req, res) => {
    CLOCK OUT
 ========================= */
 app.post("/clock-out", (req, res) => {
-  const { name, pin } = req.body;
+  const { name, pin } = req.body || {};
 
   if (staffPins[name] !== pin) {
     return res.status(401).json({ message: "Invalid PIN" });
   }
 
-  const check = `
-    SELECT * FROM attendance
+  const query = `
+    UPDATE attendance
+    SET time_out = NOW()
     WHERE name = ? AND work_date = CURDATE() AND time_out IS NULL
   `;
 
-  db.query(check, [name], (err, result) => {
-    if (err) return res.status(500).json({ message: err.message });
-
-    if (result.length === 0) {
-      return res.json({ message: "No active clock-in found" });
+  db.query(query, [name], (err) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ message: "Update failed" });
     }
 
-    const id = result[0].id;
-
-    const update = `
-      UPDATE attendance SET time_out = NOW() WHERE id = ?
-    `;
-
-    db.query(update, [id], (err) => {
-      if (err) return res.status(500).json({ message: err.message });
-
-      res.json({ message: "Clocked out successfully" });
-    });
-  });
-});
-
-/* =========================
-   PUBLIC HISTORY
-========================= */
-app.get("/attendance-history", (req, res) => {
-  const query = `
-    SELECT * FROM attendance
-    ORDER BY work_date DESC, time_in DESC
-  `;
-
-  db.query(query, (err, results) => {
-    if (err) return res.status(500).json({ message: err.message });
-
-    res.json(results.map(r => ({
-      name: r.name,
-      work_date: formatDate(r.work_date),
-      time_in: formatTime(r.time_in),
-      time_out: formatTime(r.time_out)
-    })));
-  });
-});
-
-/* =========================
-   ADMIN HISTORY (FIXED)
-========================= */
-app.get("/admin/history", (req, res) => {
-  const query = `
-    SELECT * FROM attendance
-    ORDER BY work_date DESC, time_in DESC
-  `;
-
-  db.query(query, (err, results) => {
-    if (err) return res.status(500).json({ message: err.message });
-
-    res.json(results.map(r => ({
-      name: r.name,
-      work_date: formatDate(r.work_date),
-      time_in: formatTime(r.time_in),
-      time_out: formatTime(r.time_out)
-    })));
+    res.json({ message: "Clocked out successfully" });
   });
 });
 

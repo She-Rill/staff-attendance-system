@@ -64,87 +64,41 @@
 <script>
 const API_BASE = "https://staff-attendance-backend-p39t.onrender.com";
 
-/* =========================
-   GET JWT TOKEN
-========================= */
-function getToken() {
-    return localStorage.getItem("adminToken");
-}
+function checkLogin() {
+    const isLoggedIn = localStorage.getItem("adminLoggedIn");
 
-/* =========================
-   CHECK LOGIN
-========================= */
-function checkAuth() {
-    const token = getToken();
-
-    if (!token) {
-        alert("Not logged in");
+    if (!isLoggedIn) {
         window.location.href = "/admin-login.html";
     }
 }
 
-/* =========================
-   LOAD DATA (PROTECTED)
-========================= */
 async function loadData() {
+    checkLogin();
 
-    checkAuth();
+    const res = await fetch(`${API_BASE}/attendance-history`);
+    const data = await res.json();
 
-    try {
+    const table = document.getElementById("table");
+    table.innerHTML = "";
 
-        const res = await fetch(`${API_BASE}/admin/history`, {
-            headers: {
-                "Authorization": "Bearer " + getToken()
-            }
-        });
-
-        if (res.status === 401) {
-            alert("Session expired. Please login again.");
-            localStorage.removeItem("adminToken");
-            window.location.href = "/admin-login.html";
-            return;
-        }
-
-        const data = await res.json();
-
-        const table = document.getElementById("table");
-        table.innerHTML = "";
-
-        data.forEach(row => {
-            table.innerHTML += `
-                <tr>
-                    <td>${row.name}</td>
-                    <td>${row.work_date}</td>
-                    <td>${row.time_in}</td>
-                    <td>${row.time_out || "N/A"}</td>
-                </tr>
-            `;
-        });
-
-    } catch (err) {
-        console.error("Failed to load admin history:", err);
-    }
+    data.forEach(row => {
+        table.innerHTML += `
+            <tr>
+                <td>${row.name}</td>
+                <td>${row.work_date}</td>
+                <td>${row.time_in}</td>
+                <td>${row.time_out || "N/A"}</td>
+            </tr>
+        `;
+    });
 }
 
-/* =========================
-   LOGOUT
-========================= */
-async function logout() {
-
-    localStorage.removeItem("adminToken");
-
-    await fetch(`${API_BASE}/admin/logout`, {
-        method: "POST"
-    });
-
+function logout() {
+    localStorage.removeItem("adminLoggedIn");
     window.location.href = "/admin-login.html";
 }
 
-/* =========================
-   INIT
-========================= */
 loadData();
-
 </script>
 
 </body>
