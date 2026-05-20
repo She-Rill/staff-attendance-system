@@ -13,6 +13,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname + "/public"));
 
+const OFFICE_IP = process.env.OFFICE_IP;
 /* =========================
    ADMIN CREDENTIALS
 ========================= */
@@ -49,6 +50,26 @@ db.connect((err) => {
     return;
   }
   console.log("✅ Connected to MySQL");
+});
+
+
+/* =========================
+   ACCESS KEY CHECK
+========================= */
+app.use((req, res, next) => {
+  const forwarded = req.headers["x-forwarded-for"];
+  const clientIP = forwarded ? forwarded.split(",")[0] : req.socket.remoteAddress;
+
+  // Normalize IPv6 localhost issue
+  const cleanIP = clientIP.replace("::ffff:", "");
+
+  if (OFFICE_IP && cleanIP !== OFFICE_IP) {
+    return res.status(403).json({
+      message: "Access denied: Only available on company network"
+    });
+  }
+
+  next();
 });
 
 /* =========================
