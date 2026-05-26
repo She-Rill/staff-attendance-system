@@ -43,11 +43,9 @@ const db = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-/* 🔥 CONNECTION TEST (IMPORTANT) */
+/* Connection test */
 db.connect()
-  .then(() => {
-    console.log("✅ Connected to PostgreSQL");
-  })
+  .then(() => console.log("✅ Connected to PostgreSQL"))
   .catch((err) => {
     console.log("❌ PostgreSQL connection failed");
     console.log(err);
@@ -100,8 +98,13 @@ app.get("/attendance-history", async (req, res) => {
 
     res.json(result.rows);
   } catch (err) {
+    console.log("❌ DATABASE ERROR (history):");
     console.log(err);
-    res.status(500).json({ message: "Database error" });
+
+    res.status(500).json({
+      message: "Database error",
+      error: err.message
+    });
   }
 });
 
@@ -141,8 +144,13 @@ app.post("/clock-in", checkAccessToken, async (req, res) => {
     res.json({ message: "Clocked in successfully" });
 
   } catch (err) {
+    console.log("❌ DATABASE ERROR (clock-in):");
     console.log(err);
-    res.status(500).json({ message: "Clock-in failed" });
+
+    res.status(500).json({
+      message: "Database error",
+      error: err.message
+    });
   }
 });
 
@@ -183,8 +191,15 @@ app.post("/clock-out", checkAccessToken, async (req, res) => {
     res.json({ message: "Clocked out successfully" });
 
   } catch (err) {
+    console.log("❌ DATABASE ERROR (clock-out):");
     console.log(err);
-    res.status(500).json({ message: "Clock-out failed" });
+
+  console.log("❌ FULL ERROR:", err);
+
+return res.status(500).json({
+  message: "Database error",
+  error: err,
+});  
   }
 });
 
