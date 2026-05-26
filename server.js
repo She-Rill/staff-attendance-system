@@ -43,6 +43,16 @@ const db = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
+/* 🔥 CONNECTION TEST (IMPORTANT) */
+db.connect()
+  .then(() => {
+    console.log("✅ Connected to PostgreSQL");
+  })
+  .catch((err) => {
+    console.log("❌ PostgreSQL connection failed");
+    console.log(err);
+  });
+
 /* =========================
    QR MIDDLEWARE
 ========================= */
