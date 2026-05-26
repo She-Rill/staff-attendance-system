@@ -91,7 +91,6 @@
 
         .success { color: #16a34a; }
         .error { color: #dc2626; }
-
     </style>
 </head>
 
@@ -106,7 +105,7 @@
 
 <div class="container">
 
-    <!-- Employees -->
+    <!-- Geoffrey -->
     <div class="card">
         <div class="avatar">G</div>
         <h2>Geoffrey Onyango</h2>
@@ -115,22 +114,16 @@
         <button class="out" onclick="clockOut('Geoffrey Onyango')">Clock Out</button>
     </div>
 
-    <div class="card">
-        <div class="avatar">J</div>
-        <h2>Jackline Mbithi</h2>
-        <input type="password" id="pin-Jackline-Mbithi">
-        <button class="in" onclick="clockIn('Jackline Mbithi')">Clock In</button>
-        <button class="out" onclick="clockOut('Jackline Mbithi')">Clock Out</button>
-    </div>
-
+    <!-- Sherill -->
     <div class="card">
         <div class="avatar">S</div>
         <h2>Sherill Cornel</h2>
-        <input type="password" id="pin-Sherill-Cornel">
+        <input type="password" id="pin-Sherill-Cornel" placeholder="Enter PIN">
         <button class="in" onclick="clockIn('Sherill Cornel')">Clock In</button>
         <button class="out" onclick="clockOut('Sherill Cornel')">Clock Out</button>
     </div>
 
+    <!-- Owet -->
     <div class="card">
         <div class="avatar">O</div>
         <h2>Owet Cynthia</h2>
@@ -139,6 +132,7 @@
         <button class="out" onclick="clockOut('Owet Cynthia')">Clock Out</button>
     </div>
 
+    <!-- Anthony -->
     <div class="card">
         <div class="avatar">A</div>
         <h2>Anthony Kihara</h2>
@@ -147,6 +141,7 @@
         <button class="out" onclick="clockOut('Anthony Kihara')">Clock Out</button>
     </div>
 
+    <!-- Wambui -->
     <div class="card">
         <div class="avatar">W</div>
         <h2>Wambui Kinuthia</h2>
@@ -162,7 +157,17 @@
 const API_BASE = "https://staff-attendance-backend-p39t.onrender.com";
 
 /* =========================
-   LIVE CLOCK
+   QR TOKEN
+========================= */
+const urlParams = new URLSearchParams(window.location.search);
+const TOKEN = urlParams.get("token");
+
+if (!TOKEN) {
+    document.body.innerHTML = "<h2 style='text-align:center;color:red;margin-top:50px;'>QR Access Required</h2>";
+}
+
+/* =========================
+   CLOCK
 ========================= */
 setInterval(() => {
     const now = new Date();
@@ -184,13 +189,11 @@ setInterval(() => {
    HELPERS
 ========================= */
 function getPin(name) {
-    const id = "pin-" + name.replace(/ /g, "-");
-    return document.getElementById(id).value.trim();
+    return document.getElementById("pin-" + name.replace(/ /g, "-")).value.trim();
 }
 
 function clearPin(name) {
-    const id = "pin-" + name.replace(/ /g, "-");
-    document.getElementById(id).value = "";
+    document.getElementById("pin-" + name.replace(/ /g, "-")).value = "";
 }
 
 function showMessage(msg, type = "success") {
@@ -203,68 +206,38 @@ function showMessage(msg, type = "success") {
    CLOCK IN
 ========================= */
 async function clockIn(name) {
-
     const pin = getPin(name);
+    if (!pin) return showMessage("Enter PIN", "error");
 
-    if (!pin) {
-        showMessage("Enter PIN first", "error");
-        return;
-    }
+    const res = await fetch(`${API_BASE}/clock-in`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, pin, token: TOKEN })
+    });
 
-    try {
-        const res = await fetch(`${API_BASE}/clock-in`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, pin })
-        });
+    const data = await res.json();
+    showMessage(data.message, res.ok ? "success" : "error");
 
-        const data = await res.json();
-
-        if (!res.ok) {
-            showMessage(data.message || "Clock-in failed", "error");
-            return;
-        }
-
-        showMessage(data.message, "success");
-        clearPin(name);
-
-    } catch (err) {
-        showMessage("Server error", "error");
-    }
+    if (res.ok) clearPin(name);
 }
 
 /* =========================
    CLOCK OUT
 ========================= */
 async function clockOut(name) {
-
     const pin = getPin(name);
+    if (!pin) return showMessage("Enter PIN", "error");
 
-    if (!pin) {
-        showMessage("Enter PIN first", "error");
-        return;
-    }
+    const res = await fetch(`${API_BASE}/clock-out`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, pin, token: TOKEN })
+    });
 
-    try {
-        const res = await fetch(`${API_BASE}/clock-out`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, pin })
-        });
+    const data = await res.json();
+    showMessage(data.message, res.ok ? "success" : "error");
 
-        const data = await res.json();
-
-        if (!res.ok) {
-            showMessage(data.message || "Clock-out failed", "error");
-            return;
-        }
-
-        showMessage(data.message, "success");
-        clearPin(name);
-
-    } catch (err) {
-        showMessage("Server error", "error");
-    }
+    if (res.ok) clearPin(name);
 }
 
 </script>
