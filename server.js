@@ -19,12 +19,7 @@ app.use(express.static(__dirname + "/public"));
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 
 /* =========================
-   ADMIN CREDENTIALS
-========================= */
-isAdmin(name, pin)
-
-/* =========================
-   STAFF PIN SYSTEM (NO JACKLINE)
+   STAFF USERS (ROLE SYSTEM)
 ========================= */
 const staffUsers = {
   "Geoffrey Onyango": { pin: "2587", role: "admin" },
@@ -34,6 +29,9 @@ const staffUsers = {
   "Wambui Kinuthia": { pin: "7925", role: "employee" }
 };
 
+/* =========================
+   ADMIN CHECK
+========================= */
 function isAdmin(name, pin) {
   return (
     staffUsers[name] &&
@@ -50,7 +48,7 @@ const db = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-/* Connection test */
+/* Test DB connection */
 db.connect()
   .then(() => console.log("✅ Connected to PostgreSQL"))
   .catch((err) => {
@@ -76,6 +74,9 @@ function checkAccessToken(req, res, next) {
   next();
 }
 
+/* =========================
+   WIFI RESTRICTION
+========================= */
 function checkOfficeWifi(req, res, next) {
   const requestIP =
     req.headers["x-forwarded-for"]?.split(",")[0] ||
@@ -83,9 +84,7 @@ function checkOfficeWifi(req, res, next) {
 
   const officeIP = process.env.OFFICE_IP;
 
-  if (!officeIP) {
-    return next(); // fallback if not set
-  }
+  if (!officeIP) return next();
 
   if (requestIP !== officeIP) {
     return res.status(403).json({
@@ -116,16 +115,17 @@ app.post("/admin/login", (req, res) => {
 });
 
 /* =========================
-   ATTENDANCE HISTORY
+   ATTENDANCE HISTORY (ADMIN ONLY)
 ========================= */
 app.post("/attendance-history", async (req, res) => {
   const { name, pin } = req.body || {};
 
-if (!isAdmin(name, pin)) {
-  return res.status(403).json({
-    message: "Admin access only"
-  });
-}
+  if (!isAdmin(name, pin)) {
+    return res.status(403).json({
+      message: "Admin access only"
+    });
+  }
+
   try {
     const result = await db.query(`
       SELECT id, name, work_date, time_in, time_out
@@ -134,9 +134,9 @@ if (!isAdmin(name, pin)) {
     `);
 
     res.json(result.rows);
+
   } catch (err) {
-    console.log("❌ DATABASE ERROR (history):");
-    console.log(err);
+    console.log("❌ DATABASE ERROR (history):", err);
 
     res.status(500).json({
       message: "Database error",
@@ -155,7 +155,7 @@ app.post("/clock-in", checkOfficeWifi, checkAccessToken, async (req, res) => {
     return res.status(400).json({ message: "Name and PIN required" });
   }
 
-  if (staffPins[name] !== pin) {
+  if (!staffUsers[name] || staffUsers[name].pin !== pin) {
     return res.status(401).json({ message: "Invalid PIN" });
   }
 
@@ -181,8 +181,7 @@ app.post("/clock-in", checkOfficeWifi, checkAccessToken, async (req, res) => {
     res.json({ message: "Clocked in successfully" });
 
   } catch (err) {
-    console.log("❌ DATABASE ERROR (clock-in):");
-    console.log(err);
+    console.log("❌ DATABASE ERROR (clock-in):", err);
 
     res.status(500).json({
       message: "Database error",
@@ -201,7 +200,7 @@ app.post("/clock-out", checkAccessToken, async (req, res) => {
     return res.status(400).json({ message: "Name and PIN required" });
   }
 
-  if (staffPins[name] !== pin) {
+  if (!staffUsers[name] || staffUsers[name].pin !== pin) {
     return res.status(401).json({ message: "Invalid PIN" });
   }
 
@@ -228,15 +227,12 @@ app.post("/clock-out", checkAccessToken, async (req, res) => {
     res.json({ message: "Clocked out successfully" });
 
   } catch (err) {
-    console.log("❌ DATABASE ERROR (clock-out):");
-    console.log(err);
+    console.log("❌ DATABASE ERROR (clock-out):", err);
 
-  console.log("❌ FULL ERROR:", err);
-
-return res.status(500).json({
-  message: "Database error",
-  error: err,
-});  
+    res.status(500).json({
+      message: "Database error",
+      error: err.message
+    });
   }
 });
 
