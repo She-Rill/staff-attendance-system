@@ -16,29 +16,24 @@ app.use(express.static(__dirname + "/public"));
 /* =========================
    SECURITY TOKEN (QR)
 ========================= */
-const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
+const ACCESS_TOKEN = process.env.ACCESS_TOKEN || "ARCLIGHTS_2026";
 
 /* =========================
-   STAFF USERS (ROLE SYSTEM)
+   ADMIN CREDENTIALS
 ========================= */
-const staffUsers = {
-  "Geoffrey Onyango": { pin: "2587", role: "admin" },
-  "Sherill Cornel": { pin: "8136", role: "employee" },
-  "Owet Cynthia": { pin: "4387", role: "employee" },
-  "Anthony Kihara": { pin: "5835", role: "employee" },
-  "Wambui Kinuthia": { pin: "7925", role: "employee" }
+const ADMIN_USER = process.env.ADMIN_USER;
+const ADMIN_PASS = process.env.ADMIN_PASS;
+
+/* =========================
+   STAFF PIN SYSTEM (NO JACKLINE)
+========================= */
+const staffPins = {
+  "Geoffrey Onyango": "2587",
+  "Sherill Cornel": "8136",
+  "Owet Cynthia": "4387",
+  "Anthony Kihara": "5835",
+  "Wambui Kinuthia": "7925"
 };
-
-/* =========================
-   ADMIN CHECK
-========================= */
-function isAdmin(name, pin) {
-  return (
-    staffUsers[name] &&
-    staffUsers[name].pin === pin &&
-    staffUsers[name].role === "admin"
-  );
-}
 
 /* =========================
    POSTGRES CONNECTION
@@ -48,7 +43,7 @@ const db = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-/* Test DB connection */
+/* Connection test */
 db.connect()
   .then(() => console.log("✅ Connected to PostgreSQL"))
   .catch((err) => {
@@ -75,57 +70,25 @@ function checkAccessToken(req, res, next) {
 }
 
 /* =========================
-   WIFI RESTRICTION
-========================= */
-function checkOfficeWifi(req, res, next) {
-  const requestIP =
-    req.headers["x-forwarded-for"]?.split(",")[0] ||
-    req.socket.remoteAddress;
-
-  const officeIP = process.env.OFFICE_IP;
-
-  if (!officeIP) return next();
-
-  if (requestIP !== officeIP) {
-    return res.status(403).json({
-      message: "Clock-in allowed only from office network"
-    });
-  }
-
-  next();
-}
-
-/* =========================
    ADMIN LOGIN
 ========================= */
 app.post("/admin/login", (req, res) => {
-  const { name, pin } = req.body || {};
+  const { username, password } = req.body || {};
 
-  if (!isAdmin(name, pin)) {
-    return res.status(401).json({
-      success: false,
-      message: "Invalid admin credentials"
-    });
+  if (username === ADMIN_USER && password === ADMIN_PASS) {
+    return res.json({ success: true, message: "Login successful" });
   }
 
-  return res.json({
-    success: true,
-    message: "Admin login successful"
+  return res.status(401).json({
+    success: false,
+    message: "Invalid credentials"
   });
 });
 
 /* =========================
-   ATTENDANCE HISTORY (ADMIN ONLY)
+   ATTENDANCE HISTORY
 ========================= */
-app.post("/attendance-history", async (req, res) => {
-  const { name, pin } = req.body || {};
-
-  if (!isAdmin(name, pin)) {
-    return res.status(403).json({
-      message: "Admin access only"
-    });
-  }
-
+app.get("/attendance-history", async (req, res) => {
   try {
     const result = await db.query(`
       SELECT id, name, work_date, time_in, time_out
@@ -134,9 +97,9 @@ app.post("/attendance-history", async (req, res) => {
     `);
 
     res.json(result.rows);
-
   } catch (err) {
-    console.log("❌ DATABASE ERROR (history):", err);
+    console.log("❌ DATABASE ERROR (history):");
+    console.log(err);
 
     res.status(500).json({
       message: "Database error",
@@ -148,14 +111,14 @@ app.post("/attendance-history", async (req, res) => {
 /* =========================
    CLOCK IN
 ========================= */
-app.post("/clock-in", checkOfficeWifi, checkAccessToken, async (req, res) => {
+app.post("/clock-in", checkAccessToken, async (req, res) => {
   const { name, pin } = req.body || {};
 
   if (!name || !pin) {
     return res.status(400).json({ message: "Name and PIN required" });
   }
 
-  if (!staffUsers[name] || staffUsers[name].pin !== pin) {
+  if (staffPins[name] !== pin) {
     return res.status(401).json({ message: "Invalid PIN" });
   }
 
@@ -181,7 +144,8 @@ app.post("/clock-in", checkOfficeWifi, checkAccessToken, async (req, res) => {
     res.json({ message: "Clocked in successfully" });
 
   } catch (err) {
-    console.log("❌ DATABASE ERROR (clock-in):", err);
+    console.log("❌ DATABASE ERROR (clock-in):");
+    console.log(err);
 
     res.status(500).json({
       message: "Database error",
@@ -200,7 +164,7 @@ app.post("/clock-out", checkAccessToken, async (req, res) => {
     return res.status(400).json({ message: "Name and PIN required" });
   }
 
-  if (!staffUsers[name] || staffUsers[name].pin !== pin) {
+  if (staffPins[name] !== pin) {
     return res.status(401).json({ message: "Invalid PIN" });
   }
 
@@ -227,7 +191,8 @@ app.post("/clock-out", checkAccessToken, async (req, res) => {
     res.json({ message: "Clocked out successfully" });
 
   } catch (err) {
-    console.log("❌ DATABASE ERROR (clock-out):", err);
+    console.log("❌ DATABASE ERROR (clock-out):");
+    console.log(err);
 
     res.status(500).json({
       message: "Database error",

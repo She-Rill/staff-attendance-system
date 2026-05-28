@@ -4,7 +4,6 @@
     <title>Admin Login</title>
 
     <style>
-
         body {
             font-family: Arial;
             display: flex;
@@ -61,16 +60,9 @@
             min-height: 20px;
         }
 
-        .error {
-            color: #dc2626;
-        }
-
-        .success {
-            color: #16a34a;
-        }
-
+        .error { color: #dc2626; }
+        .success { color: #16a34a; }
     </style>
-
 </head>
 
 <body>
@@ -79,18 +71,17 @@
 
     <h2>Admin Login</h2>
 
-    <!-- UPDATED FIELDS -->
     <input 
         type="text" 
-        id="name" 
-        placeholder="Full Name"
+        id="username" 
+        placeholder="Username"
         autocomplete="off"
     >
 
     <input 
         type="password" 
-        id="pin" 
-        placeholder="PIN"
+        id="password" 
+        placeholder="Password"
     >
 
     <button onclick="login()">
@@ -110,14 +101,13 @@ const API_BASE = "https://staff-attendance-backend-p39t.onrender.com";
 ========================= */
 async function login() {
 
-    const name = document.getElementById("name").value.trim();
-    const pin = document.getElementById("pin").value.trim();
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
 
     const msg = document.getElementById("msg");
 
-    /* EMPTY CHECK */
-    if (!name || !pin) {
-        msg.innerText = "Please enter name and PIN";
+    if (!username || !password) {
+        msg.innerText = "Please enter username and password";
         msg.className = "error";
         return;
     }
@@ -125,23 +115,18 @@ async function login() {
     try {
 
         const response = await fetch(`${API_BASE}/admin/login`, {
-
             method: "POST",
-
             headers: {
                 "Content-Type": "application/json"
             },
-
             body: JSON.stringify({
-                name,
-                pin
+                username,
+                password
             })
-
         });
 
         const data = await response.json();
 
-        /* SUCCESS */
         if (response.ok && data.success) {
 
             localStorage.setItem("adminLoggedIn", "true");
@@ -153,34 +138,24 @@ async function login() {
                 window.location.href = "/admin.html";
             }, 1000);
 
-        }
+        } else {
 
-        /* FAIL */
-        else {
-
-            msg.innerText = data.message || "Invalid admin credentials";
+            msg.innerText = data.message || "Invalid credentials";
             msg.className = "error";
-
         }
 
-    }
-
-    catch (err) {
+    } catch (err) {
 
         console.error(err);
 
         msg.innerText = "Server connection failed";
         msg.className = "error";
-
     }
-
 }
 
 /* ENTER KEY SUPPORT */
 document.addEventListener("keydown", function(event) {
-    if (event.key === "Enter") {
-        login();
-    }
+    if (event.key === "Enter") login();
 });
 
 </script>

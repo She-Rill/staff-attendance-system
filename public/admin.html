@@ -4,7 +4,6 @@
     <title>Admin Dashboard</title>
 
     <style>
-
         body {
             font-family: Arial;
             background: #f4f6f9;
@@ -81,15 +80,12 @@
             color: red;
             font-weight: bold;
         }
-
     </style>
-
 </head>
 
 <body>
 
 <div class="top-bar">
-
     <div>
         <h1>Admin Dashboard</h1>
         <p>Arclights Limited Attendance Records</p>
@@ -98,7 +94,6 @@
     <button class="logout-btn" onclick="logout()">
         Logout
     </button>
-
 </div>
 
 <div class="stats" id="stats">
@@ -108,7 +103,6 @@
 <h2>Attendance History</h2>
 
 <table>
-
     <thead>
         <tr>
             <th>Name</th>
@@ -120,7 +114,6 @@
     </thead>
 
     <tbody id="table"></tbody>
-
 </table>
 
 <script>
@@ -131,23 +124,18 @@ const API_BASE = "https://staff-attendance-backend-p39t.onrender.com";
    CHECK LOGIN
 ========================= */
 function checkLogin() {
-
     const loggedIn = localStorage.getItem("adminLoggedIn");
 
     if (loggedIn !== "true") {
-
         alert("Please login first");
         window.location.href = "/admin-login.html";
-
     }
-
 }
 
 /* =========================
    FORMAT DATE
 ========================= */
 function formatDate(dateString) {
-
     const date = new Date(dateString);
 
     return date.toLocaleDateString("en-GB", {
@@ -155,14 +143,12 @@ function formatDate(dateString) {
         month: "short",
         year: "numeric"
     });
-
 }
 
 /* =========================
    FORMAT TIME
 ========================= */
 function formatTime(timeString) {
-
     if (!timeString) return "N/A";
 
     const date = new Date(timeString);
@@ -172,7 +158,6 @@ function formatTime(timeString) {
         minute: "2-digit",
         second: "2-digit"
     });
-
 }
 
 /* =========================
@@ -184,21 +169,12 @@ async function loadData() {
 
     try {
 
-        const res = await fetch(`${API_BASE}/attendance-history`, {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-        name: "Geoffrey Onyango",
-        pin: "2587"
-    })
-});
+        // FIXED: GET request only (matches backend)
+        const res = await fetch(`${API_BASE}/attendance-history`);
 
         const data = await res.json();
 
         const table = document.getElementById("table");
-
         table.innerHTML = "";
 
         let totalRecords = data.length;
@@ -226,7 +202,6 @@ async function loadData() {
                     <td>${status}</td>
                 </tr>
             `;
-
         });
 
         document.getElementById("stats").innerHTML = `
@@ -238,30 +213,23 @@ async function loadData() {
         `;
 
     } catch (err) {
-
         console.error(err);
         alert("Failed to load attendance history");
-
     }
-
 }
 
 /* =========================
    LOGOUT
 ========================= */
 function logout() {
-
     localStorage.removeItem("adminLoggedIn");
-
     window.location.href = "/admin-login.html";
-
 }
 
 /* =========================
-   AUTO REFRESH
+   AUTO LOAD
 ========================= */
 loadData();
-
 setInterval(loadData, 5000);
 
 </script>
