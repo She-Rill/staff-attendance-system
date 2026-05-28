@@ -79,17 +79,18 @@
 
     <h2>Admin Login</h2>
 
+    <!-- UPDATED FIELDS -->
     <input 
         type="text" 
-        id="username" 
-        placeholder="Username"
+        id="name" 
+        placeholder="Full Name"
         autocomplete="off"
     >
 
     <input 
         type="password" 
-        id="password" 
-        placeholder="Password"
+        id="pin" 
+        placeholder="PIN"
     >
 
     <button onclick="login()">
@@ -109,19 +110,15 @@ const API_BASE = "https://staff-attendance-backend-p39t.onrender.com";
 ========================= */
 async function login() {
 
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
+    const name = document.getElementById("name").value.trim();
+    const pin = document.getElementById("pin").value.trim();
 
     const msg = document.getElementById("msg");
 
-    /* =========================
-       EMPTY FIELD CHECK
-    ========================= */
-    if (!username || !password) {
-
-        msg.innerText = "Please enter username and password";
+    /* EMPTY CHECK */
+    if (!name || !pin) {
+        msg.innerText = "Please enter name and PIN";
         msg.className = "error";
-
         return;
     }
 
@@ -136,17 +133,15 @@ async function login() {
             },
 
             body: JSON.stringify({
-                username,
-                password
+                name,
+                pin
             })
 
         });
 
         const data = await response.json();
 
-        /* =========================
-           SUCCESS
-        ========================= */
+        /* SUCCESS */
         if (response.ok && data.success) {
 
             localStorage.setItem("adminLoggedIn", "true");
@@ -160,12 +155,10 @@ async function login() {
 
         }
 
-        /* =========================
-           INVALID LOGIN
-        ========================= */
+        /* FAIL */
         else {
 
-            msg.innerText = data.message || "Invalid credentials";
+            msg.innerText = data.message || "Invalid admin credentials";
             msg.className = "error";
 
         }
@@ -183,15 +176,11 @@ async function login() {
 
 }
 
-/* =========================
-   ENTER KEY SUPPORT
-========================= */
+/* ENTER KEY SUPPORT */
 document.addEventListener("keydown", function(event) {
-
     if (event.key === "Enter") {
         login();
     }
-
 });
 
 </script>

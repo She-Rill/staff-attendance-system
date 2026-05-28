@@ -100,15 +100,18 @@ function checkOfficeWifi(req, res, next) {
    ADMIN LOGIN
 ========================= */
 app.post("/admin/login", (req, res) => {
-  const { username, password } = req.body || {};
+  const { name, pin } = req.body || {};
 
-  if (username === ADMIN_USER && password === ADMIN_PASS) {
-    return res.json({ success: true, message: "Login successful" });
+  if (!isAdmin(name, pin)) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid admin credentials"
+    });
   }
 
-  return res.status(401).json({
-    success: false,
-    message: "Invalid credentials"
+  return res.json({
+    success: true,
+    message: "Admin login successful"
   });
 });
 
