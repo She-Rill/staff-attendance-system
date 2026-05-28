@@ -21,8 +21,7 @@ const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 /* =========================
    ADMIN CREDENTIALS
 ========================= */
-const ADMIN_USER = process.env.ADMIN_USER;
-const ADMIN_PASS = process.env.ADMIN_PASS;
+isAdmin(name, pin)
 
 /* =========================
    STAFF PIN SYSTEM (NO JACKLINE)
