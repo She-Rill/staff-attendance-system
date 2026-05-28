@@ -16,7 +16,7 @@ app.use(express.static(__dirname + "/public"));
 /* =========================
    SECURITY TOKEN (QR)
 ========================= */
-const ACCESS_TOKEN = process.env.ACCESS_TOKEN || "ARCLIGHTS_2026";
+const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 
 /* =========================
    ADMIN CREDENTIALS
