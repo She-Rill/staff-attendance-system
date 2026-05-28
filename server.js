@@ -27,13 +27,21 @@ const ADMIN_PASS = process.env.ADMIN_PASS;
 /* =========================
    STAFF PIN SYSTEM (NO JACKLINE)
 ========================= */
-const staffPins = {
-  "Geoffrey Onyango": "2587",
-  "Sherill Cornel": "8136",
-  "Owet Cynthia": "4387",
-  "Anthony Kihara": "5835",
-  "Wambui Kinuthia": "7925"
+const staffUsers = {
+  "Geoffrey Onyango": { pin: "2587", role: "admin" },
+  "Sherill Cornel": { pin: "8136", role: "employee" },
+  "Owet Cynthia": { pin: "4387", role: "employee" },
+  "Anthony Kihara": { pin: "5835", role: "employee" },
+  "Wambui Kinuthia": { pin: "7925", role: "employee" }
 };
+
+function isAdmin(name, pin) {
+  return (
+    staffUsers[name] &&
+    staffUsers[name].pin === pin &&
+    staffUsers[name].role === "admin"
+  );
+}
 
 /* =========================
    POSTGRES CONNECTION
@@ -108,7 +116,14 @@ app.post("/admin/login", (req, res) => {
 /* =========================
    ATTENDANCE HISTORY
 ========================= */
-app.get("/attendance-history", async (req, res) => {
+app.post("/attendance-history", async (req, res) => {
+  const { name, pin } = req.body || {};
+
+if (!isAdmin(name, pin)) {
+  return res.status(403).json({
+    message: "Admin access only"
+  });
+}
   try {
     const result = await db.query(`
       SELECT id, name, work_date, time_in, time_out

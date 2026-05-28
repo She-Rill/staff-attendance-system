@@ -184,7 +184,16 @@ async function loadData() {
 
     try {
 
-        const res = await fetch(`${API_BASE}/attendance-history`);
+        const res = await fetch(`${API_BASE}/attendance-history`, {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        name: "Geoffrey Onyango",
+        pin: "2587"
+    })
+});
 
         const data = await res.json();
 
