@@ -21,8 +21,8 @@ const ACCESS_TOKEN = process.env.ACCESS_TOKEN || "ARCLIGHTS_2026";
 /* =========================
    ADMIN CREDENTIALS
 ========================= */
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "3058";
+const ADMIN_USER = process.env.ADMIN_USER;
+const ADMIN_PASS = process.env.ADMIN_PASS;
 
 /* =========================
    STAFF PIN SYSTEM (NO JACKLINE)
