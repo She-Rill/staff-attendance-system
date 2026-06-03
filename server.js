@@ -18,6 +18,9 @@ app.use(express.static(__dirname + "/public"));
    SECURITY TOKEN (QR)
 ========================= */
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
+const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
+
+console.log("ACCESS TOKEN ACTIVE:", ACCESS_TOKEN);
 
 /* =========================
    ADMIN CREDENTIALS
