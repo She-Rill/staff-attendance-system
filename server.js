@@ -57,8 +57,9 @@ db.connect()
    ACCESS TOKEN MIDDLEWARE
 ========================= */
 function checkAccessToken(req, res, next) {
-  console.log("🔥 TOKEN CHECK TRIGGERED");
-  console.log("BODY:", req.body);
+
+  console.log("🔥 MIDDLEWARE HIT");
+  console.log("URL:", req.originalUrl);
 
   const accessToken =
     req.body.access_token ||
@@ -69,11 +70,11 @@ function checkAccessToken(req, res, next) {
   console.log("EXPECTED TOKEN:", ACCESS_TOKEN);
 
   if (!accessToken || accessToken !== ACCESS_TOKEN) {
-    console.log("❌ BLOCKED REQUEST");
-    return res.status(403).json({ message: "Invalid QR code" });
+    return res.status(403).json({
+      message: "Access denied: Invalid QR code"
+    });
   }
 
-  console.log("✅ ACCESS GRANTED");
   next();
 }
 
