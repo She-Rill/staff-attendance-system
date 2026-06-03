@@ -25,7 +25,7 @@ const ADMIN_USER = process.env.ADMIN_USER;
 const ADMIN_PASS = process.env.ADMIN_PASS;
 
 /* =========================
-   STAFF PIN SYSTEM (NO JACKLINE)
+   STAFF PIN SYSTEM
 ========================= */
 const staffPins = {
   "Geoffrey Onyango": "2587",
@@ -43,7 +43,6 @@ const db = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-/* Connection test */
 db.connect()
   .then(() => console.log("✅ Connected to PostgreSQL"))
   .catch((err) => {
@@ -52,38 +51,17 @@ db.connect()
   });
 
 /* =========================
-   QR MIDDLEWARE
+   ACCESS TOKEN MIDDLEWARE
 ========================= */
 function checkAccessToken(req, res, next) {
-  const token =
-    req.headers["x-access-token"] ||
-    req.body.token ||
-    req.query.token;
+  const accessToken =
+    req.body.access_token ||
+    req.query.access_token ||
+    req.headers["access_token"];
 
-  if (!token || token !== ACCESS_TOKEN) {
+  if (!accessToken || accessToken !== ACCESS_TOKEN) {
     return res.status(403).json({
-      message: "Access denied: Invalid QR code"
-    });
-  }
-
-
-  next();
-}
-
-function checkOfficeWifi(req, res, next) {
-  const requestIP =
-    req.headers["x-forwarded-for"]?.split(",")[0] ||
-    req.socket.remoteAddress;
-
-  const officeIP = process.env.OFFICE_IP;
-
-  if (!officeIP) {
-    return next(); // fallback if not set
-  }
-
-  if (requestIP !== officeIP) {
-    return res.status(403).json({
-      message: "Clock-in allowed only from office network"
+      message: "Access denied: Invalid QR access token"
     });
   }
 
@@ -119,8 +97,7 @@ app.get("/attendance-history", async (req, res) => {
 
     res.json(result.rows);
   } catch (err) {
-    console.log("❌ DATABASE ERROR (history):");
-    console.log(err);
+    console.log("DATABASE ERROR:", err);
 
     res.status(500).json({
       message: "Database error",
@@ -132,7 +109,7 @@ app.get("/attendance-history", async (req, res) => {
 /* =========================
    CLOCK IN
 ========================= */
-app.post("/clock-in", checkOfficeWifi, checkAccessToken, async (req, res) => {
+app.post("/clock-in", checkAccessToken, async (req, res) => {
   const { name, pin } = req.body || {};
 
   if (!name || !pin) {
@@ -165,8 +142,7 @@ app.post("/clock-in", checkOfficeWifi, checkAccessToken, async (req, res) => {
     res.json({ message: "Clocked in successfully" });
 
   } catch (err) {
-    console.log("❌ DATABASE ERROR (clock-in):");
-    console.log(err);
+    console.log("CLOCK-IN ERROR:", err);
 
     res.status(500).json({
       message: "Database error",
@@ -212,8 +188,7 @@ app.post("/clock-out", checkAccessToken, async (req, res) => {
     res.json({ message: "Clocked out successfully" });
 
   } catch (err) {
-    console.log("❌ DATABASE ERROR (clock-out):");
-    console.log(err);
+    console.log("CLOCK-OUT ERROR:", err);
 
     res.status(500).json({
       message: "Database error",
