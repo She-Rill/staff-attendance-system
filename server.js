@@ -1,3 +1,4 @@
+console.log("🔥 NEW SERVER VERSION ACTIVE - TOKEN FIX DEPLOYED");
 require("dotenv").config();
 
 const express = require("express");
