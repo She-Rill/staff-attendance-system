@@ -160,7 +160,7 @@ const API_BASE = "https://staff-attendance-backend-p39t.onrender.com";
    QR TOKEN
 ========================= */
 const urlParams = new URLSearchParams(window.location.search);
-const TOKEN = urlParams.get("token");
+const TOKEN = urlParams.get("access_token");
 
 if (!TOKEN) {
     document.body.innerHTML = "<h2 style='text-align:center;color:red;margin-top:50px;'>QR Access Required</h2>";
