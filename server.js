@@ -1,4 +1,3 @@
-console.log("🔥 NEW SERVER VERSION ACTIVE - TOKEN FIX DEPLOYED");
 require("dotenv").config();
 
 const express = require("express");
@@ -19,7 +18,6 @@ app.use(express.static(__dirname + "/public"));
 ========================= */
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 
-console.log("ACCESS TOKEN ACTIVE:", ACCESS_TOKEN);
 
 /* =========================
    ADMIN CREDENTIALS
@@ -58,16 +56,12 @@ db.connect()
 ========================= */
 function checkAccessToken(req, res, next) {
 
-  console.log("🔥 MIDDLEWARE HIT");
-  console.log("URL:", req.originalUrl);
 
   const accessToken =
     req.body.access_token ||
     req.query.access_token ||
     req.headers["access_token"];
 
-  console.log("RECEIVED TOKEN:", accessToken);
-  console.log("EXPECTED TOKEN:", ACCESS_TOKEN);
 
   if (!accessToken || accessToken !== ACCESS_TOKEN) {
     return res.status(403).json({
