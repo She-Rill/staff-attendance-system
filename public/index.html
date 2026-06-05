@@ -231,7 +231,7 @@ async function clockOut(name) {
     const res = await fetch(`${API_BASE}/clock-out`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, pin, token: TOKEN })
+        body: JSON.stringify({ name, pin, access_token: TOKEN })
     });
 
     const data = await res.json();
