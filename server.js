@@ -73,6 +73,30 @@ function checkAccessToken(req, res, next) {
 }
 
 /* =========================
+   OFFICE WIFI RESTRICTION
+========================= */
+function checkOfficeWifi(req, res, next) {
+
+  const requestIP =
+    req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+    req.socket.remoteAddress;
+
+  const officeIP = process.env.OFFICE_IP;
+
+  if (!officeIP) {
+    return next();
+  }
+
+  if (requestIP !== officeIP) {
+    return res.status(403).json({
+      message: "Clock-in allowed only from office WiFi"
+    });
+  }
+
+  next();
+}
+
+/* =========================
    ADMIN LOGIN
 ========================= */
 app.post("/admin/login", (req, res) => {
@@ -113,7 +137,7 @@ app.get("/attendance-history", async (req, res) => {
 /* =========================
    CLOCK IN
 ========================= */
-app.post("/clock-in", checkAccessToken, async (req, res) => {
+app.post("/clock-in", checkOfficeWifi, checkAccessToken, async (req, res) => {
   const { name, pin } = req.body || {};
 
   if (!name || !pin) {
@@ -158,7 +182,7 @@ app.post("/clock-in", checkAccessToken, async (req, res) => {
 /* =========================
    CLOCK OUT
 ========================= */
-app.post("/clock-out", checkAccessToken, async (req, res) => {
+app.post("/clock-out", checkOfficeWifi, checkAccessToken, async (req, res) => {
   const { name, pin } = req.body || {};
 
   if (!name || !pin) {
